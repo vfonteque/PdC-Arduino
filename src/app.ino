@@ -11,7 +11,7 @@ bool ar = true;
 #define entradaAnalogica A2
 #define valorDeFuncionamento 990
 
-ResponsiveAnalogRead analogo(entradaAnalogica, true);
+ResponsiveAnalogRead analog(entradaAnalogica, true);
 
 #define pinBotoes A0
 
@@ -63,7 +63,7 @@ void setup() {
 }
 
 void loop() {
-  analogo.update();
+  analog.update();
   botaoSelecionado();
 
   switch (contador) {
@@ -154,7 +154,6 @@ void loop() {
         delay(pause2s);
         lcd.clear();
       }
-  }
       break;
     case 6: // Trantamento de erros
       lcd.setCursor(0, 0);
