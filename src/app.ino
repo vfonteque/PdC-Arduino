@@ -62,6 +62,77 @@ void setup() {
   lcd.begin(16, 2);
 }
 
+void erroPreChama() {
+  lcd.clear();
+  lcd.print("CHAMA SEM ABRIR");
+  lcd.setCursor(0, 1);
+  lcd.print("VALVULA DE GAS");
+  delay(pause2s);
+  contador = erro;
+  lcd.clear();
+}
+
+void loading() {
+  lcd.setCursor(0, 1);
+  lcd.print(".....");
+  delay(pause2s);
+  lcd.setCursor(0, 1);
+  for (int i=0; i<4; i++){
+    lcd.print("o");
+    delay(pause2s);
+  }
+}
+
+void leituraSerial() {
+  Serial.println(analog.getRawValue());
+  Serial.println(analog.getValue());
+}
+
+void botaoSelecionado() {
+  int valBotoes = analogRead(pinBotoes);
+  if ((valBotoes < 800) && (valBotoes >= 600)) {
+     estadoBotao(btSELECT);
+     
+  } else if ((valBotoes < 600) && (valBotoes >= 400)) {
+     estadoBotao(btLEFT);
+     
+  } else if ((valBotoes < 400) && (valBotoes >= 200)) {
+     estadoBotao(btUP);
+     
+  } else if ((valBotoes < 200) && (valBotoes >= 60)) {
+     estadoBotao(btDOWN);
+     
+  } else if  (valBotoes < 60) {
+     estadoBotao(btRIGHT);
+     
+  } else {
+     estadoBotao(btNENHUM);
+  }
+}
+
+void estadoBotao(int botao) {
+  if ((millis() - delayBotao) > tempoDebounce) {
+     if ((botao != btNENHUM) && (estadoBotaoAnt == btNENHUM) ) {
+        botaoApertado(botao); 
+        delayBotao = millis();
+     }
+     if ((botao == btNENHUM) && (estadoBotaoAnt != btNENHUM) ) {
+        delayBotao = millis();
+     }
+  }
+  estadoBotaoAnt = botao;
+}
+
+void botaoApertado(int botao) {
+  if(botao == 5) {} // DIREITA
+  if(botao == 2) {} // ESQUERDA
+  if(botao == 3) {} // CIMA
+  if(botao == 4) {} // BAIXO
+  if(botao == 1) { // SELECT
+    selected = true;
+  }
+}
+
 void loop() {
   analog.update();
   botaoSelecionado();
@@ -108,14 +179,14 @@ void loop() {
       lcd.print("Ignicao");
       Serial.println("Pos ignicao");
       leituraSerial();
-      if (analogRead(entradaAnalogica) > valorDeFuncionamento) { // Primeira verificacao de chama antes da hora
+      if (analog.getValue() > valorDeFuncionamento) { // Primeira verificacao de chama antes da hora
         erroPreChama();
         break;
       }
       delay(pause3s);
       Serial.println("Pre valvula de gas");
       leituraSerial();
-      if (analogRead(entradaAnalogica) > valorDeFuncionamento) { // Segunda verificacao
+      if (analog.getValue() > valorDeFuncionamento) { // Segunda verificacao
         erroPreChama();
         break;
       }
@@ -127,7 +198,7 @@ void loop() {
       delay(pause2s);
       Serial.println("Pos valvula");
       leituraSerial();
-      if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama se manteve 
+      if (analog.getValue() < valorDeFuncionamento) { // Verificacao se a chama se manteve 
         lcd.clear();
         lcd.print("SEM CHAMA");
         delay(pause2s);
@@ -139,7 +210,7 @@ void loop() {
       lcd.clear();
       break;
     case 5: // Funcionamento
-      if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama esta normal
+      if (analog.getValue() < valorDeFuncionamento) { // Verificacao se a chama esta normal
         contador = erro;
         lcd.clear();
         break;
@@ -166,75 +237,5 @@ void loop() {
       lcd.setCursor(0, 0);
       lcd.print("ERRO 204");
       break;
-}
-
-void erroPreChama() {
-  lcd.clear();
-  lcd.print("CHAMA SEM ABRIR");
-  lcd.setCursor(0, 1);
-  lcd.print("VALVULA DE GAS");
-  delay(pause2s);
-  contador = erro;
-  lcd.clear();
-}
-
-void loading() {
-  lcd.setCursor(0, 1);
-  lcd.print(".....");
-  delay(pause2s);
-  lcd.setCursor(0, 1);
-  for (int i=0; i<4; i++){
-    lcd.print("o");
-    delay(pause2s);
-  }
-}
-
-void leituraSerial() {
-  Serial.println(analog.getRawValue());
-  Serial.println(analog.getValue());
-}
-
-void botaoSelecionado() {
-   int valBotoes = analogRead(pinBotoes);
-  if ((valBotoes < 800) && (valBotoes >= 600)) {
-     estadoBotao(btSELECT);
-     
-  } else if ((valBotoes < 600) && (valBotoes >= 400)) {
-     estadoBotao(btLEFT);
-     
-  } else if ((valBotoes < 400) && (valBotoes >= 200)) {
-     estadoBotao(btUP);
-     
-  } else if ((valBotoes < 200) && (valBotoes >= 60)) {
-     estadoBotao(btDOWN);
-     
-  } else if  (valBotoes < 60) {
-     estadoBotao(btRIGHT);
-     
-  } else {
-     estadoBotao(btNENHUM);
-  }
-}
-
-void estadoBotao(int botao) {
-  if ((millis() - delayBotao) > tempoDebounce) {
-     if ((botao != btNENHUM) && (estadoBotaoAnt == btNENHUM) ) {
-        botaoApertado(botao); 
-        delayBotao = millis();
-     }
-     if ((botao == btNENHUM) && (estadoBotaoAnt != btNENHUM) ) {
-        delayBotao = millis();
-     }
-  }
-  estadoBotaoAnt = botao;
-}
-
-void botaoApertado(int botao) {
-  if(botao == 5) {} // DIREITA
-  if(botao == 2) {} // ESQUERDA
-  if(botao == 3) {} // CIMA
-  if(botao == 4) {} // BAIXO
-  if(botao == 1) { // SELECT
-    selected = true;
   }
 }
