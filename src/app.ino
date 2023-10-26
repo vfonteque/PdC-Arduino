@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 #include <string.h>
+#include <ResponsiveAnalogRead.h>
 int contador = 0;
-int i = 0;
 int pause2s = 2000;
 int pause3s = 3000;
 int pause5s = 5000;
@@ -9,7 +9,9 @@ bool selected = false;
 bool ar = true;
 
 #define entradaAnalogica A2
-int valorDeFuncionamento = 990;
+#define valorDeFuncionamento 990
+
+ResponsiveAnalogRead analogo(entradaAnalogica, true);
 
 #define pinBotoes A0
 
@@ -61,6 +63,7 @@ void setup() {
 }
 
 void loop() {
+  analogo.update();
   botaoSelecionado();
 
   switch (contador) {
@@ -151,6 +154,7 @@ void loop() {
         delay(pause2s);
         lcd.clear();
       }
+  }
       break;
     case 6: // Trantamento de erros
       lcd.setCursor(0, 0);
@@ -163,7 +167,6 @@ void loop() {
       lcd.setCursor(0, 0);
       lcd.print("ERRO 204");
       break;
-  }
 }
 
 void erroPreChama() {
@@ -181,15 +184,15 @@ void loading() {
   lcd.print(".....");
   delay(pause2s);
   lcd.setCursor(0, 1);
-  for (i=0; i<4; i++){
+  for (int i=0; i<4; i++){
     lcd.print("o");
     delay(pause2s);
   }
 }
 
 void leituraSerial() {
-  Serial.println(digitalRead(entradaAnalogica));
-  Serial.println(analogRead(entradaAnalogica));
+  Serial.println(analog.getRawValue());
+  Serial.println(analog.getValue());
 }
 
 void botaoSelecionado() {
