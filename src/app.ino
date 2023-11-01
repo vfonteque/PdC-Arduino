@@ -136,6 +136,8 @@ void loop() {
         if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama se manteve 
           lcd.clear();
           lcd.print("APAGOU");
+          Serial.println("APAGOU");
+          delay(pause2s);
           contador = erro;
           lcd.clear();
           break;
