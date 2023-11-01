@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 #include <string.h>
 int contador = 0;
-int i = 0;
+int pause1s = 1000;
 int pause2s = 2000;
 int pause3s = 3000;
 int pause5s = 5000;
@@ -124,13 +124,25 @@ void loop() {
       delay(pause2s);
       Serial.println("Pos valvula");
       leituraSerial();
-      if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama se manteve 
+      if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama existe
         lcd.clear();
         lcd.print("SEM CHAMA");
         delay(pause2s);
         contador = erro;
         lcd.clear();
         break;
+      }
+      for (int i = 0; i < 3; i++) { // Teve chama inicial
+        if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama se manteve 
+          lcd.clear();
+          lcd.print("APAGOU");
+          Serial.println("APAGOU");
+          delay(pause2s);
+          contador = erro;
+          lcd.clear();
+          break;
+        }
+        delay(pause1s);
       }
       contador = 5;
       lcd.clear();
@@ -181,7 +193,7 @@ void loading() {
   lcd.print(".....");
   delay(pause2s);
   lcd.setCursor(0, 1);
-  for (i=0; i<4; i++){
+  for (int i=0; i < 4; i++) {
     lcd.print("o");
     delay(pause2s);
   }
