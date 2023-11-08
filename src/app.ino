@@ -1,7 +1,7 @@
 #include <LiquidCrystal.h>
 #include <string.h>
 int contador = 0;
-int i = 0;
+int pause1s = 1000;
 int pause2s = 2000;
 int pause3s = 3000;
 int pause5s = 5000;
@@ -49,9 +49,9 @@ String descBotao[6] = {"", "Select", "Esquerda", "Baixo", "Cima", "Direita"};
 
 void setup() {
   Serial.begin(9600);
-  pinMode(pin1, OUTPUT);
-  pinMode(pin2, OUTPUT);
-  pinMode(pin3, OUTPUT);
+  pinMode(pin1, OUTPUT); // Purga
+  pinMode(pin2, OUTPUT); // Ignicao
+  pinMode(pin3, OUTPUT); // Valvula de gas
   pinMode(pin4, OUTPUT);
   pinMode(pin5, OUTPUT);
   pinMode(A1, INPUT);
@@ -65,6 +65,7 @@ void loop() {
 
   switch (contador) {
     case 0:
+      reset();
       lcd.setCursor(0, 0);
       lcd.print("Inicio");
       if (selected) contador = 1;
@@ -86,6 +87,7 @@ void loop() {
       }
     case 2: // Purga
       if (ar) {
+        digitalWrite(pin1, HIGH);
         lcd.clear();
         lcd.print("Purgando sistema");
         loading();
@@ -99,6 +101,8 @@ void loop() {
         break;
       }
     case 3: // Ignicao 
+      digitalWrite(pin1, LOW);
+      digitalWrite(pin2, HIGH);
       lcd.clear();
       Serial.println("Antes da ignicao");
       leituraSerial();
@@ -119,12 +123,13 @@ void loop() {
       contador = 4;
       break;
     case 4: // Valvula de gas
+      digitalWrite(pin3, HIGH);
       lcd.clear();
       lcd.print("Abre valvula");
       delay(pause2s);
       Serial.println("Pos valvula");
       leituraSerial();
-      if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama se manteve 
+      if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama existe
         lcd.clear();
         lcd.print("SEM CHAMA");
         delay(pause2s);
@@ -132,6 +137,20 @@ void loop() {
         lcd.clear();
         break;
       }
+      for (int i = 0; i < 3; i++) { // Teve chama inicial
+        if (analogRead(entradaAnalogica) < valorDeFuncionamento) { // Verificacao se a chama se manteve 
+          reset();
+          lcd.clear();
+          lcd.print("APAGOU");
+          Serial.println("APAGOU");
+          delay(pause2s);
+          contador = erro;
+          lcd.clear();
+          break;
+        }
+        delay(pause1s);
+      }
+      digitalWrite(pin2, LOW); // Desligamento da ignicao
       contador = 5;
       lcd.clear();
       break;
@@ -153,6 +172,7 @@ void loop() {
       }
       break;
     case 6: // Trantamento de erros
+      reset();
       lcd.setCursor(0, 0);
       lcd.print("ERRO GERAL");
       delay(pause5s);
@@ -181,7 +201,7 @@ void loading() {
   lcd.print(".....");
   delay(pause2s);
   lcd.setCursor(0, 1);
-  for (i=0; i<4; i++){
+  for (int i=0; i < 4; i++) {
     lcd.print("o");
     delay(pause2s);
   }
@@ -190,6 +210,14 @@ void loading() {
 void leituraSerial() {
   Serial.println(digitalRead(entradaAnalogica));
   Serial.println(analogRead(entradaAnalogica));
+}
+
+void reset() {
+  digitalWrite(pin1, LOW);
+  digitalWrite(pin2, LOW);
+  digitalWrite(pin3, LOW);
+  digitalWrite(pin4, LOW);
+  digitalWrite(pin5, LOW);
 }
 
 void botaoSelecionado() {
